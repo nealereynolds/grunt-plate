@@ -1,0 +1,82 @@
+/*------------------------------------*\
+    $STYLES
+
+	@author: 	Neale Reynolds
+	@twitter:	@nealereynolds
+	@url:		nealereynolds.co.uk
+
+	-----------------------------------
+
+	Credit must be given to the following:
+
+	Harry Roberts @csswizadry for his CSS Guidelines and inuit [@inuit]
+	Stu Robosn @sturobson for his a-slightly-bizarre-starting-point
+
+	Both authors have influenced the creation of a number of sections in this setup
+
+\*------------------------------------*/
+
+/*
+ *
+ * 	Drop the base on a new project.
+ * 	This is directly compiled and minified to the css directory
+ *
+ * 	1. 	Setup
+ *	2. 	Base styles, unclasses HTML
+ *	3.	Objects and abstractions
+ *	4.	Style trumps
+ *	
+ */
+
+
+/*
+ * Setup
+*/
+
+@import "defaults";
+@import "generic/mixins";
+@import "generic/normalize";
+@import "generic/reset";
+@import "generic/clearfix";
+@import "generic/shared";
+
+
+
+/*
+ * Base Styles: unclasses HTML elements
+*/
+
+@import "base/code";
+@import "base/forms";
+@import "base/headings";
+@import "base/images";
+@import "base/links";
+@import "base/lists";
+@import "base/main";
+@import "base/quotes";
+@import "base/smallprint";
+@import "base/tables";
+@import "base/typography";
+
+
+
+/*
+ * Objects & abstractions
+*/
+
+@import "objects/block-list";
+@import "objects/breadcrumbs";
+@import "objects/buttons";
+@import "objects/icon-text";
+@import "objects/media";
+@import "objects/nav";
+
+
+
+/*
+ * Style trumps
+*/
+
+@import "generic/helper";
+
+

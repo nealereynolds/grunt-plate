@@ -1,4 +1,4 @@
 grunt-plate
 ===========
 
-Grunt Boilerplat
+Grunt Boilerplate
