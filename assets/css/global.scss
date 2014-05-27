@@ -25,7 +25,7 @@
  *	2. 	Base styles, unclasses HTML
  *	3.	Objects and abstractions
  *	4.	Style trumps
- *	
+ *
  */
 
 
@@ -34,11 +34,12 @@
 */
 
 @import "defaults";
-@import "generic/mixins";
+@import "helpers/mixins";
 @import "generic/normalize";
 @import "generic/reset";
-@import "generic/clearfix";
-@import "generic/shared";
+
+@import "helpers/clearfix";
+@import "helpers/shared";
 
 
 
@@ -64,12 +65,12 @@
  * Objects & abstractions
 */
 
-@import "objects/block-list";
-@import "objects/breadcrumbs";
-@import "objects/buttons";
-@import "objects/icon-text";
-@import "objects/media";
-@import "objects/nav";
+@import "components/block-list";
+@import "components/breadcrumbs";
+@import "components/buttons";
+@import "components/icon-text";
+@import "components/media";
+@import "components/nav";
 
 
 
@@ -77,6 +78,6 @@
  * Style trumps
 */
 
-@import "generic/helper";
+@import "helpers/helper";
 
 

@@ -1,0 +1,403 @@
+/*------------------------------------*\
+    $MIXINS
+\*------------------------------------*/
+/**
+ * Create a fully formed type style (sizing and vertical rhythm) by passing in a
+ * single value, e.g.:
+ *
+   `@include font-size(10px);`
+ *
+ * Thanks to @redclov3r for the `line-height` Sass:
+ * twitter.com/redclov3r/status/250301539321798657
+ */
+@mixin font-size($font-size, $line-height:true){
+    font-size:$font-size;
+    font-size:($font-size / $base-font-size)*1rem;
+    @if $line-height == true{
+        line-height:ceil($font-size / $base-line-height) * ($base-line-height / $font-size);
+    }
+}
+
+
+/**
+ * Style any number of headings in one fell swoop, e.g.:
+ *
+   .foo{
+       @include headings(1, 3){
+           color:#BADA55;
+       }
+    }
+ *
+ * With thanks to @lar_zzz, @paranoida, @rowanmanning and ultimately
+ * @thierrylemoulec for refining and improving my initial mixin.
+ */
+@mixin headings($from: 1, $to: 6){
+    %base-heading {
+        @content
+    }
+
+    @if $from >= 1 and $to <= 6{
+        @for $i from $from through $to{
+            h#{$i}{
+                @extend %base-heading;
+            }
+        }
+    }
+}
+
+
+/**
+ * Create vendor-prefixed CSS in one go, e.g.
+ *
+   `@include vendor(border-radius, 4px);`
+ *
+ */
+@mixin vendor($property, $value...){
+    -webkit-#{$property}:$value;
+       -moz-#{$property}:$value;
+        -ms-#{$property}:$value;
+         -o-#{$property}:$value;
+            #{$property}:$value;
+}
+
+
+/**
+ * Create CSS keyframe animations for all vendors in one go, e.g.:
+ *
+   .foo{
+       @include vendor(animation, shrink 3s);
+   }
+
+   @include keyframe(shrink){
+       from{
+           font-size:5em;
+       }
+   }
+ *
+ * Courtesy of @integralist: twitter.com/integralist/status/260484115315437569
+ */
+@mixin keyframe ($animation-name){
+    @-webkit-keyframes $animation-name{
+        @content;
+    }
+
+    @-moz-keyframes $animation-name{
+        @content;
+    }
+
+    @-ms-keyframes $animation-name{
+        @content;
+    }
+
+    @-o-keyframes $animation-name{
+        @content;
+    }
+
+    @keyframes $animation-name{
+        @content;
+    }
+}
+
+
+/**
+ * Force overly long spans of text to truncate, e.g.:
+ *
+   `@include truncate(100%);`
+ *
+ * Where `$truncation-boundary` is a united measurement.
+ */
+@mixin truncate($truncation-boundary){
+    max-width:$truncation-boundary;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+
+
+/**
+ * Media Query Mixin
+ * Modified from Stu Robson's post @ http://alwaystwisted.com/post.php?s=2013-04-01-my-media-query-mixin
+ *
+
+   '@include mediaquery($lap-start, max){}'
+
+ * Would result in:
+
+     @media screen and (max-width: 30.0625em) {
+        .example {
+            width: 100%;
+        }
+    }
+
+ *
+ */
+
+@mixin mediaquery($point, $query1: min, $query2: width) {
+
+  @media screen and (#{$query1}-#{$query2}: $point / $base-font-size +em) {
+      @content;
+  }
+
+}
+
+/**
+ * Alternative Media Query Mixin to account for IE8 and allow mobiel first
+ * https://github.com/guardian/sass-mq
+ *
+
+   ' @include mq($from: mobile) {}'
+   ' @include mq($to: tablet) {}'
+
+  ## Note variable $mq-responsive must be set to true
+  ## $mq-responsive: true;
+
+ * Would result in:
+
+    #
+    $from = min-width
+    $to = max-width
+    #
+
+    .element {
+      // Applies to devices at least as wide as a mobile
+      @include mq($from: mobile) {
+          color: green;
+      }
+      // Applies to devices at least as wide as a tablet
+      @include mq($from: tablet) {
+          color: blue;
+      }
+      // Applies to devices smaller than a "desktop"
+      @include mq($to: desktop) {
+          color: red;
+      }
+    }
+
+    // global.css
+    @media all and (min-width: 18.75em) {
+        .element {
+            color: green;
+        }
+    }
+    @media all and (min-width: 37.5em) {
+        .element {
+            color: blue;
+        }
+    }
+    @media all and (max-width: 56.1875em) {
+        .element {
+            color: red;
+        }
+    }
+
+    // old-ie.css - served only to IE <= 8
+    .element {
+        color: green;
+        color: blue;
+    }
+
+ *
+ */
+
+@function mq-px2em($px, $base-font-size: 16px) {
+    @if (unitless($px)) {
+        @warn "Assuming #{$px} to be in pixels, attempting to convert it into pixels for you";
+        @return mq-px2em($px + 0px); // That may fail.
+    } @else if (unit($px) == em) {
+        @return $px;
+    }
+    @return ($px / $base-font-size) * 1em;
+}
+
+@function mq-retrieve-breakpoint-width($name) {
+    @each $breakpoint in $mq-breakpoints {
+        $breakpoint-name:  nth($breakpoint, 1);
+        $breakpoint-width: nth($breakpoint, 2);
+
+        @if $name == $breakpoint-name {
+            @return $breakpoint-width;
+        }
+    }
+    @return 'Breakpoint #{$name} does not exist';
+}
+
+
+@mixin mq($from: false, $to: false, $and: false) {
+
+    // Initialize variables
+    $min-width: 0;
+    $max-width: 0;
+    $mediaQuery: '';
+
+    // From: this breakpoint (inclusive)
+    @if $from {
+        @if type-of($from) == number {
+            $min-width: mq-px2em($from);
+        } @else {
+            $min-width: mq-px2em(mq-retrieve-breakpoint-width($from));
+        }
+    }
+
+    // To: that breakpoint (exclusive)
+    @if $to {
+        @if type-of($to) == number {
+            $max-width: mq-px2em($to);
+        } @else {
+            $max-width: mq-px2em(mq-retrieve-breakpoint-width($to)) - .01em;
+        }
+    }
+
+    // Responsive support is disabled, rasterize the output outside @media blocks
+    // The browser will rely on the cascade itself.
+    @if ($mq-responsive == false) {
+        $static-breakpoint-width: mq-retrieve-breakpoint-width($mq-static-breakpoint);
+        @if type-of($static-breakpoint-width) == number {
+            $target-width: mq-px2em($static-breakpoint-width);
+            // Output only rules that start at or span our target width
+            @if ($and == false and ($min-width <= $target-width) and (($to == false) or ($max-width >= $target-width))) {
+                @content;
+            }
+        } @else {
+            // Throw a warning if $mq-static-breakpoint is not in the $mq-breakpoints list
+            @warn "No static styles will be output: #{$static-breakpoint-width}";
+        }
+    }
+
+    // Responsive support is enabled, output rules inside @media queries
+    @else {
+        @if $min-width != 0 { $mediaQuery: '#{$mediaQuery} and (min-width: #{$min-width})'; }
+        @if $max-width != 0 { $mediaQuery: '#{$mediaQuery} and (max-width: #{$max-width})'; }
+        @if $and            { $mediaQuery: '#{$mediaQuery} and #{$and}'; }
+
+        $mediaQuery: unquote(#{$mediaQuery});
+
+        @media all #{$mediaQuery} {
+            @content;
+        }
+    }
+}
+
+// Add a breakpoint
+// Usage: $mq-breakpoints: mq-add-breakpoint(tvscreen, 1920px);
+// Credit goes to Sam Richard (author of the `respond-to()` mixin)
+@function mq-add-breakpoint($name, $breakpoint) {
+    $breakpoint: $name $breakpoint;
+    $output: append($mq-breakpoints, $breakpoint, 'space');
+    @return $output;
+}
+
+// Show the active breakpoint in the top right corner of the viewport
+@if (length($mq-show-breakpoints) > 0) {
+    body:before {
+        background-color: #FCF8E3;
+        border-bottom: 1px solid #FBEED5;
+        border-left: 1px solid #FBEED5;
+        color: #C09853;
+        font: small-caption;
+        padding: 3px 6px;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+
+        // Loop through the breakpoints that should be shown
+        @each $show-breakpoint in $mq-show-breakpoints {
+            // ...then loop through the master list of breakpoints
+            @each $breakpoint in $mq-breakpoints {
+                // ...to see if the name of any breakpoint matches the breakpoint to show
+                @if (nth($breakpoint, 1) == $show-breakpoint) {
+                    // ...and if it does, show it
+                    @include mq(nth($breakpoint, 1)) {
+                       content: "#{nth($breakpoint, 1)} ≥ #{nth($breakpoint, 2)} (#{mq-px2em(nth($breakpoint, 2))})";
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Cross browser opacity
+ *
+  @include opacity(0.8);
+ *
+  {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+    filter: alpha(opacity=80);
+    -moz-opacity: 0.8;
+    -khtml-opacity: 0.8;
+    opacity: 0.8;
+  }
+ *
+ */
+
+@mixin opacity($trans) {
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$trans * 100})";
+  filter: alpha(opacity=($trans * 100));
+  -moz-opacity: $trans;
+  -khtml-opacity: $trans;
+  opacity: $trans;
+}
+
+
+/**
+
+  Px to Rems
+  as per http://hugogiraudel.com/2013/03/18/ultimate-rem-mixin/
+
+  Set to 62.5% to make your numbers easier to calculate where baseline is 10px;
+  html {
+    font-size: 62.5%;
+  }
+
+  Declaration:
+  @include rem(font-size, 1.6rem);
+
+  Output:
+  font-size: 16px;
+  font-size: 1.6rem;
+
+ */
+
+
+
+@function parseInt($n) { /* 2 */
+  @return $n / ($n * 0 + 1);
+}
+
+@mixin rem($property, $values) {
+  $px : (); /* 3 */
+  $rem: (); /* 3 */
+
+  @each $value in $values { /* 4 */
+
+    @if $value == 0 or $value == auto { /* 5 */
+      $px : append($px , $value);
+      $rem: append($rem, $value);
+    }
+
+    @else {
+      $unit: unit($value);    /* 6 */
+      $val: parseInt($value); /* 6 */
+
+      @if $unit == "px" {  /* 7 */
+        $px : append($px,  $value);
+        $rem: append($rem, ($val / 10 + rem));
+      }
+
+      @if $unit == "rem" { /* 7 */
+        $px : append($px,  ($val * 10 + px));
+        $rem: append($rem, $value);
+      }
+    }
+  }
+
+  @if $px == $rem {     /* 8 */
+    #{$property}: $px;  /* 9 */
+  } @else {
+    #{$property}: $px;  /* 9 */
+    #{$property}: $rem; /* 9 */
+  }
+}
